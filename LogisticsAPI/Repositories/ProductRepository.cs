@@ -1,15 +1,20 @@
 using System.Data;
+using Dapper;
+using LogisticsAPI.Database;
 using LogisticsAPI.Database.Entities;
+using LogisticsAPI.ViewModels;
 using Microsoft.Data.SqlClient;
 
 namespace LogisticsAPI.Repositories;
 
 public class ProductRepository
 {
+    private readonly DapperContext _dapperContext;
     private readonly string _connectionString;
 
-    public ProductRepository(IConfiguration configuration)
+    public ProductRepository(IConfiguration configuration, DapperContext dapperContext)
     {
+        _dapperContext = dapperContext;
         _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
 
@@ -37,5 +42,28 @@ public class ProductRepository
         using var sqlBulk = new SqlBulkCopy(_connectionString);
         sqlBulk.DestinationTableName = "Products";
         await sqlBulk.WriteToServerAsync(table);
+    }
+
+    public async Task<ProductViewModel?> GetProductBySKU(string sku)
+    {
+        var query = """
+                    SELECT
+                        p.Name,
+                        p.EAN,
+                        i.ManufacturerName,
+                        p.Category,
+                        p.DefaultImage,
+                        i.Qty,
+                        i.Unit,
+                        pr.PriceNett,
+                        i.ShippingCost
+                    FROM Products p
+                    INNER JOIN dbo.Inventories i on p.Id = i.ProductId
+                    INNER JOIN dbo.Prices pr on pr.SKU = p.SKU
+                    WHERE p.SKU = @sku
+                    """;
+    
+        using var connection = _dapperContext.CreateConnection();
+        return await connection.QuerySingleOrDefaultAsync<ProductViewModel>(query, new {sku});
     }
 }
