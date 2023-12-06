@@ -63,6 +63,9 @@ app.MapGet("/DownloadAndSaveToDatabase", async (
     //Musi wykonać się na końcu bo sa zależności do tej tablicy
     //Foreign key na Product table
     await inventoryRepository.InsertInventory(inventoryEntities);
+
+    // Funkcja RemoveNotNeededRows usuwa niepotrzebne wiersze z tabeli Product.
+    await productRepository.RemoveNotNeededRows();
     
     return "Ok";
 });

@@ -74,4 +74,28 @@ public class ProductRepository
         using var connection = _dapperContext.CreateConnection(); // Utworzenie połączenia
         return await connection.QuerySingleOrDefaultAsync<ProductViewModel>(query, new {sku}); // Wykonanie zapytania i zwrócenie wyniku
     }
+
+    // Metoda usuwająca niepotrzebne wiersze.
+    public async Task RemoveNotNeededRows()
+    {
+        // Zapytanie usuwające z tabeli 'Inventories' wszystkie wiersze, których wartość 'Shipping' nie wynosi '24h'.
+        // Następnie usuwane są wszystkie wiersze z tabeli 'Products', które mają ustawioną wartość 'IsWire' na 1 
+        // oraz ich wartość 'Shipping' w tabeli 'Inventories' nie wynosi '24h' lub jest null.
+        var query = """
+                    BEGIN TRANSACTION;
+
+                    DELETE FROM Inventories
+                    WHERE Shipping != '24h';
+                    
+                    DELETE FROM Products
+                    WHERE Id IN (SELECT Id
+                                 FROM Products P
+                                          LEFT JOIN dbo.Inventories I on P.Id = I.ProductId
+                                 WHERE P.IsWire = 1 AND (I.Shipping != '24h' OR I.Shipping IS NULL));
+
+                    COMMIT;
+                    """;
+        using var connection = _dapperContext.CreateConnection(); // Utworzenie połączenia
+        await connection.ExecuteAsync(query); // Wykonanie zapytania i zwrócenie wyniku
+    }
 }
