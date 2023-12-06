@@ -1,7 +1,10 @@
+using Dapper;
 using LogisticsAPI.Database;
 using LogisticsAPI.Repositories;
 using LogisticsAPI.Services;
+using LogisticsAPI.ViewModels;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
@@ -48,6 +51,35 @@ app.MapGet("/DownloadAndSaveToDatabase", async (
     await inventoryRepository.InsertInventory(inventoryEntities);
     
     return "Ok";
+});
+
+app.MapGet("/Product/{sku}", async (string sku, DapperContext dapperContext) =>
+{
+    var query = """
+                SELECT
+                    p.Name,
+                    p.EAN,
+                    i.ManufacturerName,
+                    p.Category,
+                    p.DefaultImage,
+                    i.Qty,
+                    i.Unit,
+                    pr.PriceNett,
+                    i.ShippingCost
+                FROM Products p
+                INNER JOIN dbo.Inventories i on p.Id = i.ProductId
+                INNER JOIN dbo.Prices pr on pr.SKU = p.SKU
+                WHERE p.SKU = @sku
+                """;
+    
+    using var connection = dapperContext.CreateConnection();
+    var product = await connection.QuerySingleOrDefaultAsync<ProductViewModel>(query, new {sku});
+    if (product == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(product);
 });
 
 app.Run();
