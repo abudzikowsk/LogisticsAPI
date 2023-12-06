@@ -1,5 +1,7 @@
 namespace LogisticsAPI.Database.Entities;
 
+// ProductEntity to klasa reprezentująca produkt w bazie danych.
+// Definiuje różne właściwości produktu, takie jak unikalny identyfikator, SKU, nazwa produktu, kod EAN, nazwa producenta, kategoria, czy jest przewodem, czy jest dostępny, czy jest dostawcą i domyślny obrazek.
 public class ProductEntity
 {
     public int Id { get; set; }

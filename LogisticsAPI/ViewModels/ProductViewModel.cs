@@ -1,5 +1,7 @@
 namespace LogisticsAPI.ViewModels;
 
+//Klasa ProductViewModel jest wykorzystywana do reprezentacji widoku produktu.
+//Zawiera właściwości takie jak nazwa produktu, kod EAN, nazwa producenta, kategoria, domyślny obraz, ilość w magazynie, jednostka miary, cena netto i koszt wysyłki.
 public class ProductViewModel
 {
     public string? Name { get; set; } //Product

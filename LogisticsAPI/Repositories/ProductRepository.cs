@@ -7,20 +7,25 @@ using Microsoft.Data.SqlClient;
 
 namespace LogisticsAPI.Repositories;
 
+// Klasa reprezentująca repozytorium dla produktów
 public class ProductRepository
 {
-    private readonly DapperContext _dapperContext;
-    private readonly string _connectionString;
+    private readonly DapperContext _dapperContext; // Kontekst dla Dappera
+    private readonly string _connectionString; // Ciąg połączenia do bazy danych
 
+    // Konstruktor repozytorium produktów
     public ProductRepository(IConfiguration configuration, DapperContext dapperContext)
     {
         _dapperContext = dapperContext;
-        _connectionString = configuration.GetConnectionString("DefaultConnection");
+        _connectionString = configuration.GetConnectionString("DefaultConnection"); // Pobieranie ciągu połączenia do bazy danych
     }
-
+    
+    // Metoda do wstawiania grupy obiektów produktu do bazy danych
     public async Task InsertProduct(List<ProductEntity> productEntities)
     {
-        var table = new DataTable();
+        var table = new DataTable(); // Tworzenie tabeli DataTable
+        
+        // Dodawanie kolumn do tabeli
         table.Columns.Add("Id", typeof(int));
         table.Columns.Add("SKU", typeof(string));
         table.Columns.Add("Name", typeof(string));
@@ -32,6 +37,7 @@ public class ProductRepository
         table.Columns.Add("IsVendor", typeof(bool));
         table.Columns.Add("DefaultImage", typeof(string));
 
+        // Wypełnianie tabeli danymi
         foreach (var productEntity in productEntities)
         {
             table.Rows.Add(productEntity.Id, productEntity.SKU, productEntity.Name, productEntity.EAN,
@@ -39,11 +45,13 @@ public class ProductRepository
                 productEntity.IsVendor, productEntity.DefaultImage);
         }
         
+        // Użycie SqlBulkCopy do szybkiego kopiowania danych
         using var sqlBulk = new SqlBulkCopy(_connectionString);
-        sqlBulk.DestinationTableName = "Products";
-        await sqlBulk.WriteToServerAsync(table);
+        sqlBulk.DestinationTableName = "Products"; // Definiowanie, do której tabeli będą kopiowane dane
+        await sqlBulk.WriteToServerAsync(table); // Kopiowanie danych do serwera SQL
     }
-
+    
+    // Metoda do pobierania produktu na podstawie SKU
     public async Task<ProductViewModel?> GetProductBySKU(string sku)
     {
         var query = """
@@ -63,7 +71,7 @@ public class ProductRepository
                     WHERE p.SKU = @sku
                     """;
     
-        using var connection = _dapperContext.CreateConnection();
-        return await connection.QuerySingleOrDefaultAsync<ProductViewModel>(query, new {sku});
+        using var connection = _dapperContext.CreateConnection(); // Utworzenie połączenia
+        return await connection.QuerySingleOrDefaultAsync<ProductViewModel>(query, new {sku}); // Wykonanie zapytania i zwrócenie wyniku
     }
 }
