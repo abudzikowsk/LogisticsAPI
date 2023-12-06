@@ -5,14 +5,14 @@ BEGIN
     CREATE TABLE Products(
                          Id INTEGER PRIMARY KEY,
                          SKU VARCHAR(255),
-                         Name VARCHAR(255) NULL,
+                         Name VARCHAR(1000) NULL,
                          EAN VARCHAR(255) NULL,
                          ProducerName VARCHAR(255) NULL,
-                         Category VARCHAR(255) NULL,
+                         Category VARCHAR(1000) NULL,
                          IsWire BIT NULL,
                          Available BIT NULL,
                          IsVendor BIT NULL,
-                         DefaultImage VARCHAR(255) NULL
+                         DefaultImage VARCHAR(1000) NULL
     );
 END
 
@@ -37,7 +37,7 @@ IF ( NOT EXISTS (SELECT *
                  WHERE TABLE_NAME = 'Prices'))
 BEGIN
     CREATE TABLE Prices(
-                      Id INTEGER PRIMARY KEY,
+                      Id VARCHAR(255) PRIMARY KEY,
                       SKU VARCHAR(255),
                       PriceNett DECIMAL(18, 2) NULL,
                       PriceNettWithDiscount DECIMAL(18, 2) NULL,
