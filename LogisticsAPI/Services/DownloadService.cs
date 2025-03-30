@@ -41,4 +41,4 @@ public class DownloadService
         // Zwracanie pustego ciąga znaków, jeśli żądanie nie powiodło się
         return string.Empty;
     }
-}
+}AW
